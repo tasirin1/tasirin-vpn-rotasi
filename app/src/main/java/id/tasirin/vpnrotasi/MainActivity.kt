@@ -132,9 +132,12 @@ class MainActivity : AppCompatActivity() {
             setPadding(48, 16, 48, 0)
             addView(name); addView(host); addView(country); addView(username); addView(password)
         }
+        // Formulir dibungkus ScrollView supaya semua kolom tetap bisa
+        // dijangkau saat keyboard menutupi sebagian layar.
+        val scroll = android.widget.ScrollView(this).apply { addView(box) }
         AlertDialog.Builder(this)
             .setTitle("Tambah Server")
-            .setView(box)
+            .setView(scroll)
             .setPositiveButton("Simpan") { _, _ ->
                 val entry = ServerEntry(
                     id = System.currentTimeMillis(),

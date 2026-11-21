@@ -18,9 +18,29 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        create("release") {
+            val storeFileProp = project.findProperty("storeFile") as String?
+            if (storeFileProp != null) {
+                storeFile = file(storeFileProp)
+                storePassword = project.findProperty("storePassword") as String?
+                keyAlias = project.findProperty("keyAlias") as String?
+                keyPassword = project.findProperty("keyPassword") as String?
+                // Keystore proyek berformat PKCS12 (dibuat dengan OpenSSL,
+                // tersimpan sebagai secret GitHub — tidak pernah di repo).
+                storeType = "PKCS12"
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            // Tanda tangan hanya bila properti keystore diberikan (CI rilis).
+            // Tanpa itu assembleRelease menghasilkan APK tanpa tanda tangan.
+            if (project.findProperty("storeFile") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

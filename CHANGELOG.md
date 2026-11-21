@@ -5,6 +5,15 @@ Format mengikuti Keep a Changelog.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-21
+
+### Fixed
+
+- Tampilan tertutup keyboard (laporan uji owner di Galaxy A05):
+  `MainActivity` sekarang `adjustResize` — layar menyusut rapi di atas
+  keyboard, kolom interval dan tombol tetap terlihat; formulir tambah
+  server dibungkus ScrollView supaya semua kolom bisa digeser.
+
 ## [0.1.0] - 2026-11-21
 
 ### Added

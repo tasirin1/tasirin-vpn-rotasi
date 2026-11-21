@@ -22,7 +22,11 @@ jobs:
           cache: "gradle"
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          # Paket 'tools' warisan sudah tidak ada di repositori SDK —
+          # v3 gagal di sini ("Failed to find package 'tools'").
+          packages: platform-tools
 
       - name: Build debug APK
         run: ./gradlew assembleDebug

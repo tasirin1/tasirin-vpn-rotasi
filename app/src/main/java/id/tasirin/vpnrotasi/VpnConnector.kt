@@ -27,7 +27,9 @@ class VpnConnector(private val context: Context) {
             val manager = context.getSystemService(VpnManager::class.java)
                 ?: return Result(false, "Layanan VPN sistem tidak tersedia.")
             val profile = Ikev2VpnProfile.Builder(entry.host, entry.username)
-                .setUsernamePasswordAuthentication(entry.username, entry.password)
+                // Nama metode yang benar di API Android: setAuthUsernamePassword
+                // (argumen ketiga = sertifikat CA server, null = percaya bawaan sistem).
+                .setAuthUsernamePassword(entry.username, entry.password, null)
                 .setMetered(false)
                 .build()
             manager.provisionVpnProfile(profile)

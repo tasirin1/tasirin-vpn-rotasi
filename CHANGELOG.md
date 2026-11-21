@@ -5,6 +5,14 @@ Format mengikuti Keep a Changelog.
 
 ## [Unreleased]
 
+### Fixed
+
+- CI: setup-android v3 gagal memasang paket warisan `tools` yang sudah
+  dihapus dari repositori SDK — naik ke v4 + paket `platform-tools` saja.
+- Compile: nama metode IKEv2 yang benar `setAuthUsernamePassword`
+  (bukan `setUsernamePasswordAuthentication`) — build CI pertama merah di
+  sini, sesudah diperbaiki CI hijau penuh (APK + 9 unit test).
+
 ## [0.1.0] - 2026-11-21
 
 ### Added

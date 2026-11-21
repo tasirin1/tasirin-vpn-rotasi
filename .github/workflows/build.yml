@@ -1,0 +1,37 @@
+name: Build
+permissions:
+  contents: read
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: "Build APK + unit test"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "gradle"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest
+
+      - name: Archive APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: tasirin-vpn-rotasi-debug-apk
+          path: app/build/outputs/apk/debug/*.apk

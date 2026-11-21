@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.VpnRotasi" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/biru_utama</item>
+        <item name="colorPrimaryDark">@color/biru_gelap</item>
+        <item name="colorAccent">@color/biru_utama</item>
+        <item name="android:windowBackground">@color/putih</item>
+    </style>
+</resources>

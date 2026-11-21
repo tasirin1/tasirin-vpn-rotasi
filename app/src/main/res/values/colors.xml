@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema terang biru-putih, seragam Download Manager dan Disc Server. -->
+    <color name="biru_utama">#1565C0</color>
+    <color name="biru_gelap">#0D47A1</color>
+    <color name="biru_muda">#E3F2FD</color>
+    <color name="putih">#FFFFFF</color>
+    <color name="teks_utama">#212121</color>
+    <color name="teks_redup">#616161</color>
+</resources>

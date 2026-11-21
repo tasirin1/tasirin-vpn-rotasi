@@ -1,0 +1,63 @@
+name: Release
+permissions:
+  contents: write
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: "Rilis APK bertanda tangan"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "gradle"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+
+      - name: Decode keystore dari secret
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/keystore.p12
+
+      - name: Build release + unit test
+        run: >
+          ./gradlew assembleRelease testDebugUnitTest
+          -PstoreFile=/tmp/keystore.p12
+          -PstorePassword=${{ secrets.STORE_PASSWORD }}
+          -PkeyAlias=tasirin-vpn-rotasi
+          -PkeyPassword=${{ secrets.STORE_PASSWORD }}
+
+      - name: Terbitkan GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            VER="${GITHUB_REF_NAME#v}"
+          else
+            VER="0.1.0"
+          fi
+          cp app/build/outputs/apk/release/app-release.apk "tasirin-vpn-rotasi-v${VER}.apk"
+          cat > /tmp/release-notes.md << 'EOF'
+          Rilis pertama Tasirin VPN Rotasi — aplikasi VPN Android open source dengan rotasi server otomatis, ditulis dari awal dengan kode orisinal.
+
+          Isi v0.1.0:
+          - Daftar server diketik sendiri oleh pengguna (nama, alamat, negara, user ID, password) — aplikasi tidak membawa daftar server bawaan.
+          - Sambung/putus VPN IKEv2 lewat VpnManager bawaan Android (butuh Android 11+ untuk menyambung).
+          - Rotasi otomatis pola lingkaran + tercepat, interval diatur pengguna, server mati dilewati — berjalan selama aplikasi terbuka.
+          - Tema terang biru-putih, UI Bahasa Indonesia.
+
+          Catatan: APK ditandatangani dengan kunci rilis proyek. Simpan APK ini baik-baik; rilis berikutnya memakai kunci yang sama supaya bisa memperbarui tanpa copot pasang.
+          EOF
+          gh release create "v${VER}" "tasirin-vpn-rotasi-v${VER}.apk" \
+            --title "Tasirin VPN Rotasi v${VER}" \
+            --notes-file /tmp/release-notes.md

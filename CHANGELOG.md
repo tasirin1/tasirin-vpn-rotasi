@@ -5,6 +5,19 @@ Format mengikuti Keep a Changelog.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-25
+
+### Added
+
+- Split tunneling (fitur pilihan owner nomor 6, diminta lagi 2026-11-25):
+  tombol "Split Tunneling" di layar utama dengan tiga mode — Mati (semua
+  aplikasi lewat VPN), Hanya aplikasi dipilih yang lewat VPN, dan Semua
+  lewat VPN kecuali yang dipilih. Aplikasi dipilih dari daftar aplikasi
+  terpasang (dialog centang), tersimpan, dan diterapkan ke profil IKEv2
+  lewat `setAllowedApplications`/`setDisallowedApplications`. Mode Hanya
+  tanpa pilihan ditolak saat menyambung (daftar allowed kosong di Android
+  berarti semua aplikasi). Logika murni `SplitTunnel` + unit test.
+
 ## [0.1.1] - 2026-11-21
 
 ### Fixed

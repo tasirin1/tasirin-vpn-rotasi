@@ -1,5 +1,6 @@
 package id.tasirin.vpnrotasi
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -26,12 +27,14 @@ import java.util.concurrent.Executors
 class MainActivity : AppCompatActivity() {
 
     private lateinit var store: ServerStore
+    private lateinit var splitStore: SplitStore
     private lateinit var connector: VpnConnector
 
     private lateinit var tvStatus: TextView
     private lateinit var lvServers: ListView
     private lateinit var etInterval: EditText
     private lateinit var swRotation: Switch
+    private lateinit var btnSplit: Button
 
     private val servers = mutableListOf<ServerEntry>()
     private val deadIndices = mutableSetOf<Int>()
@@ -56,12 +59,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         store = ServerStore(this)
+        splitStore = SplitStore(this)
         connector = VpnConnector(this)
 
         tvStatus = findViewById(R.id.tvStatus)
         lvServers = findViewById(R.id.lvServers)
         etInterval = findViewById(R.id.etInterval)
         swRotation = findViewById(R.id.swRotation)
+        btnSplit = findViewById(R.id.btnSplit)
+        btnSplit.setOnClickListener { showSplitModeDialog() }
+        updateSplitLabel()
 
         servers.addAll(store.load())
         refreshList()
@@ -179,6 +186,84 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun updateSplitLabel() {
+        val mode = splitStore.loadMode()
+        val count = splitStore.loadSelected().size
+        btnSplit.text = when (mode) {
+            SplitMode.MATI -> "Split Tunneling: Mati"
+            SplitMode.HANYA -> "Split Tunneling: Hanya $count aplikasi"
+            SplitMode.KECUALIKAN -> "Split Tunneling: Kecuali $count aplikasi"
+        }
+    }
+
+    /** Dialog langkah 1: pilih mode split tunneling. */
+    private fun showSplitModeDialog() {
+        val labels = arrayOf(
+            "Mati — semua aplikasi lewat VPN",
+            "Hanya aplikasi dipilih yang lewat VPN",
+            "Semua lewat VPN, kecuali yang dipilih"
+        )
+        val modes = listOf(SplitMode.MATI, SplitMode.HANYA, SplitMode.KECUALIKAN)
+        var chosen = modes.indexOf(splitStore.loadMode())
+        AlertDialog.Builder(this)
+            .setTitle("Split Tunneling")
+            .setSingleChoiceItems(labels, chosen) { _, which -> chosen = which }
+            .setPositiveButton("Lanjut") { _, _ ->
+                val mode = modes[chosen]
+                if (mode == SplitMode.MATI) {
+                    splitStore.save(SplitMode.MATI, splitStore.loadSelected())
+                    updateSplitLabel()
+                    setStatus("Split tunneling mati — semua aplikasi lewat VPN.")
+                } else {
+                    showAppPicker(mode)
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    /** Dialog langkah 2: centang aplikasi dari daftar yang terpasang. */
+    private fun showAppPicker(mode: SplitMode) {
+        setStatus("Memuat daftar aplikasi…")
+        probeExecutor.execute {
+            val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+            val apps = packageManager.queryIntentActivities(intent, 0)
+                .mapNotNull { ri ->
+                    val pkg = ri.activityInfo.packageName
+                    if (pkg == packageName) null
+                    else pkg to ri.loadLabel(packageManager).toString()
+                }
+                .distinctBy { it.first }
+                .sortedBy { it.second.lowercase() }
+            val saved = splitStore.loadSelected()
+            runOnUiThread {
+                if (apps.isEmpty()) {
+                    setStatus("Daftar aplikasi tidak terbaca di HP ini.")
+                    return@runOnUiThread
+                }
+                val names = apps.map { it.second }.toTypedArray()
+                val checked = BooleanArray(apps.size) { apps[it].first in saved }
+                AlertDialog.Builder(this)
+                    .setTitle(
+                        if (mode == SplitMode.HANYA) "Aplikasi yang lewat VPN"
+                        else "Aplikasi yang TIDAK lewat VPN"
+                    )
+                    .setMultiChoiceItems(names, checked) { _, which, isChecked ->
+                        checked[which] = isChecked
+                    }
+                    .setPositiveButton("Simpan") { _, _ ->
+                        val selected = apps.filterIndexed { i, _ -> checked[i] }
+                            .map { it.first }.toSet()
+                        splitStore.save(mode, selected)
+                        updateSplitLabel()
+                        setStatus("Split tunneling disimpan: ${selected.size} aplikasi dipilih.")
+                    }
+                    .setNegativeButton("Batal", null)
+                    .show()
+            }
+        }
+    }
+
     private fun connectSelected() {
         val index = when {
             selectedIndex in servers.indices -> selectedIndex
@@ -194,9 +279,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun connectTo(index: Int) {
         val entry = servers[index]
+        // Terapkan split tunneling: saring pilihan ke aplikasi yang masih
+        // terpasang, dan tolak mode HANYA tanpa pilihan (di Android daftar
+        // allowed kosong artinya semua aplikasi — kebalikan maksudnya).
+        val splitMode = splitStore.loadMode()
+        val terpasang = try {
+            packageManager.getInstalledApplications(0).map { it.packageName }.toSet()
+        } catch (e: Exception) {
+            null
+        }
+        val splitSelected = splitStore.loadSelected()
+            .let { sel -> if (terpasang == null) sel else sel intersect terpasang }
+        if (!SplitTunnel.valid(splitMode, splitSelected)) {
+            setStatus("Split tunneling mode Hanya butuh minimal 1 aplikasi dipilih.")
+            showAppPicker(SplitMode.HANYA)
+            return
+        }
         setStatus("Menyambung ke ${entry.name}…")
         probeExecutor.execute {
-            val result = connector.connect(entry)
+            val result = connector.connect(entry, splitMode, splitSelected)
             runOnUiThread {
                 if (result.ok) {
                     currentIndex = index

@@ -54,6 +54,11 @@ langsung owner (tasirin1), instruksi owner yang menang.
   berikutnya.
 - Tes kecepatan tahap awal = waktu resolusi alamat (`SpeedProbe`);
   pengukuran latensi UDP IKEv2 yang akurat = tahap berikutnya.
+- Split tunneling (fitur 6) TERTUNDA — terbukti 2026-11-25 dari sumber
+  AOSP + CI: `Ikev2VpnProfile` tidak punya pengaturan aplikasi per profil
+  (tidak ada `setAllowedApplications`/`setDisallowedApplications`);
+  split per aplikasi hanya tersedia di `VpnService.Builder` (mesin VPN
+  sendiri). Jangan coba pasang lagi di mesin platform.
 - Alur izin VPN sistem saat pertama menyambung (persetujuan pengguna di
   dialog sistem) perlu uji perangkat nyata; tangani hasilnya dengan jujur
   di pesan status, jangan dianggap pasti mulus.

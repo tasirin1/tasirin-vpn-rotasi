@@ -5,6 +5,15 @@ Format mengikuti Keep a Changelog.
 
 ## [Unreleased]
 
+### Removed
+
+- Percobaan split tunneling v0.2.0 DIBATALKAN sebelum terbit (2026-11-25):
+  terbukti API platform `Ikev2VpnProfile` tidak mendukung daftar aplikasi
+  per profil — tidak ada `setAllowedApplications` di AOSP, CI merah di
+  kompilasi. Kode di-revert, tag v0.2.0 dihapus, versi tetap 0.1.1.
+  Fitur pilihan owner nomor 6 DITUNDA sampai aplikasi punya mesin
+  `VpnService` sendiri (di sanalah split per aplikasi tersedia).
+
 ## [0.1.1] - 2026-11-21
 
 ### Fixed

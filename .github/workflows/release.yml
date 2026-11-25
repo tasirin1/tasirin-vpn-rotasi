@@ -48,13 +48,12 @@ jobs:
           fi
           cp app/build/outputs/apk/release/app-release.apk "tasirin-vpn-rotasi-v${VER}.apk"
           cat > /tmp/release-notes.md << 'EOF'
-          Rilis Tasirin VPN Rotasi — aplikasi VPN Android open source dengan rotasi server otomatis, ditulis dari awal dengan kode orisinal.
+          Rilis pertama Tasirin VPN Rotasi — aplikasi VPN Android open source dengan rotasi server otomatis, ditulis dari awal dengan kode orisinal.
 
-          Isi rilis ini:
+          Isi v0.1.0:
           - Daftar server diketik sendiri oleh pengguna (nama, alamat, negara, user ID, password) — aplikasi tidak membawa daftar server bawaan.
           - Sambung/putus VPN IKEv2 lewat VpnManager bawaan Android (butuh Android 11+ untuk menyambung).
           - Rotasi otomatis pola lingkaran + tercepat, interval diatur pengguna, server mati dilewati — berjalan selama aplikasi terbuka.
-          - Split tunneling (baru di v0.2.0): pilih aplikasi yang lewat VPN saja, atau kecualikan aplikasi tertentu dari VPN.
           - Tema terang biru-putih, UI Bahasa Indonesia.
 
           Catatan: APK ditandatangani dengan kunci rilis proyek. Simpan APK ini baik-baik; rilis berikutnya memakai kunci yang sama supaya bisa memperbarui tanpa copot pasang.

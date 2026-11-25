@@ -4,15 +4,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- Agar daftar aplikasi berikon peluncur terbaca untuk pemilih
-         split tunneling (visibilitas paket Android 11+). -->
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent>
-    </queries>
-
     <application
         android:allowBackup="true"
         android:label="@string/app_name"
